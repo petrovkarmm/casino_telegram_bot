@@ -1,12 +1,12 @@
 from aiogram import F
 from aiogram.methods import Close
 from aiogram_dialog import Dialog, Window
-from aiogram_dialog.widgets.kbd import Button, SwitchTo, Back, Group, Row
-from aiogram_dialog.widgets.text import Format
+from aiogram_dialog.widgets.kbd import Button, SwitchTo, Back, Group, Row, Counter
+from aiogram_dialog.widgets.text import Format, Const
 
 from start_menu.casino_dialog.casino_dialog_states import CasinoDialog
-from start_menu.casino_dialog.casino_getters import first_window_start_data
-from start_menu.casino_dialog.casino_on_click_functions import close_dialog, choose_set
+from start_menu.casino_dialog.casino_getters import first_window_start_data, bet_getter
+from start_menu.casino_dialog.casino_on_click_functions import close_dialog, choose_set, set_bet_click, on_bet_changed
 
 casino_menu_window = Window(
     Format(
@@ -73,7 +73,7 @@ roulette_choose_bet_window = Window(
         Button(id='bet_odd', text=Format('➖ Нечетное'), on_click=choose_set),
         Button(id='bet_small', text=Format('🔢 Меньше 18'), on_click=choose_set),
         Button(id='bet_big', text=Format('🔢 Больше 18'), on_click=choose_set),
-        width=2  # чтобы кнопки шли по 2 в ряд красиво
+        width=2
     ),
     Row(
         Back(id='back', text=Format('🔙 Назад')),
@@ -85,10 +85,36 @@ roulette_choose_bet_window = Window(
 
 roulette_set_bet_window = Window(
     Format(
-        text='🎰 Ваш текущий баланс: {balance}\n'
-             'Выберите сумму ставки: '
+        text='🎰 Ваш текущий баланс: {balance}\n\n'
+             'Вы поставили на {dialog_data[title]}\n'
+             'Коэффициент на победу {dialog_data[coefficient]}\n\n'
+             'Выберите сумму ставки: ',
+        when=~F['bet']
     ),
-    getter=first_window_start_data,
+    Format(
+        text='🎰 Ваш текущий баланс: {balance}\n\n'
+             'Вы поставили на {dialog_data[title]}\n'
+             'Коэффициент на победу: {dialog_data[coefficient]}\n\n'
+             'Ваш потенциальный выигрыш: {potential_gain} руб.\n\n'
+             'Выберите сумму ставки: ',
+        when=F['bet']
+    ),
+    Counter(
+        id="roulette_bet_counter",
+        text=Format('{value:g} руб.'),
+        plus=Const('+10 руб.'),
+        minus=Const('-10 руб.'),
+        default=10,
+        max_value=F["balance"],
+        on_text_click=set_bet_click,
+        on_value_changed=on_bet_changed,
+        increment=10
+    ),
+    Row(
+        Back(id='back', text=Format('🔙 Назад')),
+        Button(id='close_dialog', text=Format('❌ Закрыть'), on_click=close_dialog),
+    ),
+    getter=bet_getter,
     state=CasinoDialog.roulette_set_bet,
 )
 
