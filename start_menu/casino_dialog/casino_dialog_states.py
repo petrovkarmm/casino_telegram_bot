@@ -6,3 +6,4 @@ class CasinoDialog(StatesGroup):
     roulette = State()
     roulette_choose_bet = State()
     roulette_set_bet = State()
+    roulette_spin = State()
