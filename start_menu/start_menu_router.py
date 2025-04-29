@@ -13,7 +13,7 @@ start_menu_router = Router()
 async def start_dialog_command(message: Message, state: FSMContext, dialog_manager: DialogManager):
     await dialog_manager.start(
         CasinoDialog.casino_main_menu,
-        data={'balance': 100}
+        data={'balance': 110}
     )
 
 
@@ -21,5 +21,5 @@ async def start_dialog_command(message: Message, state: FSMContext, dialog_manag
 async def start_dialog_text(message: Message, state: FSMContext, dialog_manager: DialogManager):
     await dialog_manager.start(
         CasinoDialog.casino_main_menu,
-        data={'balance': 100}
+        data={'balance': 110}
     )
