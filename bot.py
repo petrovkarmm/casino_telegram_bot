@@ -35,7 +35,7 @@ async def bot_start():
             return print(f"{event}")
 
     # error handler
-    dp.errors.register(error_unknown_intent_handler)
+    # dp.errors.register(error_unknown_intent_handler)
 
     # handlers routers
     dp.include_router(start_menu_router)
