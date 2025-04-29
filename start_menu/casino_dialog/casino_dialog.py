@@ -1,70 +1,58 @@
 from aiogram import F
-from aiogram.methods import Close
+from aiogram.enums import ParseMode
 from aiogram_dialog import Dialog, Window
-from aiogram_dialog.widgets.kbd import Button, SwitchTo, Back, Group, Row, Counter
-from aiogram_dialog.widgets.text import Format, Const
+from aiogram_dialog.widgets.kbd import Button, SwitchTo, Back, Group, Row
+from aiogram_dialog.widgets.text import Format
 
 from start_menu.casino_dialog.casino_dialog_states import CasinoDialog
 from start_menu.casino_dialog.casino_getters import first_window_start_data, balance_getter, roulette_spin_getter
-from start_menu.casino_dialog.casino_on_click_functions import close_dialog, choose_set, set_bet_clicked, set_bet_none, \
-    spin_roulette
+from start_menu.casino_dialog.casino_on_click_functions import (close_dialog, choose_set, set_bet_clicked,
+                                                                set_bet_none, spin_roulette, set_bet_sum_none)
 
 casino_menu_window = Window(
     Format(
-        text='🎰 Ваш текущий баланс: {balance}\n\n'
+        text='🎰 Ваш текущий баланс: {balance} рублей.\n\n'
              'Выберите игру 🎲'
     ),
     SwitchTo(id='roulette', text=Format('🎯 Рулетка'), state=CasinoDialog.roulette),
     Button(id='close_dialog', text=Format('❌ Закрыть'), on_click=close_dialog),
     getter=first_window_start_data,
     state=CasinoDialog.casino_main_menu,
+    parse_mode=ParseMode.HTML,
 )
 
 roulette_menu_window = Window(
     Format(
         text=(
-            '🎡 РУЛЕТКА 🎡\n\n'
-            '⬛⬛🟥🟥🟥⬛⬛\n'
-            '⬛🟥🟩🟩🟩🟥⬛\n'
-            '🟥🟩⬛⚪️⬛🟩🟥\n'
-            '🟥🟩⚪️🟥⚪️🟩🟥\n'
-            '🟥🟩⬛⚪️⬛🟩🟥\n'
-            '⬛🟥🟩🟩🟩🟥⬛\n'
-            '⬛⬛🟥🟥🟥⬛⬛\n\n'
+            '🎡 <b>РУЛЕТКА</b> 🎡\n\n'
             '💬 Сделайте вашу ставку!\n\n'
-            'Испытайте удачу! 🍀'
+            '🎲 Испытайте удачу! 🍀'
         ),
         when=~F["dialog_data"]["current_rate"]
     ),
     Format(
         text=(
-            '🎡 РУЛЕТКА 🎡\n\n'
-            '⬛⬛🟥🟥🟥⬛⬛\n'
-            '⬛🟥🟩🟩🟩🟥⬛\n'
-            '🟥🟩⬛⚪️⬛🟩🟥\n'
-            '🟥🟩⚪️🟥⚪️🟩🟥\n'
-            '🟥🟩⬛⚪️⬛🟩🟥\n'
-            '⬛🟥🟩🟩🟩🟥⬛\n'
-            '⬛⬛🟥🟥🟥⬛⬛\n\n'
-            '💬 Ваша ставка {dialog_data[current_rate]}.\n\n'
-            'Крутите рулетку! 🎲'
+            '🎡 <b>РУЛЕТКА</b> 🎡\n\n'
+            '💬 Ваша ставка: <b>{dialog_data[current_rate]}</b>\n\n'
+            '🎯 Готовы крутить рулетку!'
         ),
         when=F["dialog_data"]["current_rate"]
     ),
     SwitchTo(id='roulette_choose_bet', text=Format('⚡️ Сделать ставку'), when=~F["dialog_data"]["current_rate"],
              state=CasinoDialog.roulette_choose_bet),
-    Button(id='spin_roulette', text=Format('😈 Прокрутить рулетку'), when=F["dialog_data"]["current_rate"]),
+    Button(id='spin_roulette', text=Format('🎰 Прокрутить рулетку'), when=F["dialog_data"]["current_rate"]),
     Row(
         Back(id='back', text=Format('🔙 Назад')),
         Button(id='close_dialog', text=Format('❌ Закрыть'), on_click=close_dialog),
     ),
     state=CasinoDialog.roulette,
+    parse_mode=ParseMode.HTML,
 )
 
 roulette_choose_bet_window = Window(
     Format(
-        text='🎰 Ваш текущий баланс: {balance}\n\n'
-             'Выберите ставку: '
+        text='🎰 Ваш текущий баланс: {balance} монет\n\n'
+             '💬 Выберите ставку:'
     ),
     Group(
         Button(id='bet_black', text=Format('⬛ Черное'), on_click=choose_set),
@@ -82,37 +70,42 @@ roulette_choose_bet_window = Window(
     ),
     getter=first_window_start_data,
     state=CasinoDialog.roulette_choose_bet,
+    parse_mode=ParseMode.HTML,
 )
 
 roulette_set_bet_window = Window(
     Format(
-        text='🎰 Ваш текущий баланс: {balance}\n\n'
-             'Вы поставили на {dialog_data[title]}\n'
-             'Коэффициент на победу {dialog_data[coefficient]}\n\n',
+        text='🎰 Баланс: {balance} монет\n\n'
+             'Вы выбрали: <b>{dialog_data[title]}</b>\n\n'
+             'Коэффициент: <b>x{dialog_data[coefficient]}</b>\n\n',
         when=~F['dialog_data']['current_bet']
     ),
     Button(
-        id='current_bet', text=Format('Время делать ставки! ⬇️'),
+        id='current_bet', text=Format('💰 Время делать ставки! ⬇️'),
         when=~F['dialog_data']['current_bet']
     ),
     Format(
-        text='🎰 Ваш текущий баланс: {balance}\n\n'
-             'Вы поставили на {dialog_data[title]}\n'
-             'Коэффициент на победу: {dialog_data[coefficient]}\n\n'
-             'Ваш потенциальный выигрыш: {dialog_data[potential_gain]} руб.\n\n',
+        text='🎰 Баланс: {balance} монет\n\n'
+             'Вы выбрали: <b>{dialog_data[title]}</b>\n\n'
+             'Коэффициент: <b>x{dialog_data[coefficient]}</b>\n\n'
+             '💵 Потенциальный выигрыш: <b>{dialog_data[potential_gain]} руб.</b>\n\n',
         when=F['dialog_data']['current_bet']
     ),
     Button(
-        id='current_bet', text=Format('Ваша ставка: {dialog_data[current_bet]} руб.'),
+        id='current_bet', text=Format('🔒 Ваша ставка: {dialog_data[current_bet]} руб.'),
         when=F['dialog_data']['current_bet']
     ),
     Button(
-        id='start_roulette', text=Format('~ Прокрутить рулетку ~'), when=F['dialog_data']['current_bet'],
+        id='start_roulette', text=Format('🎯 Крутить рулетку!'), when=F['dialog_data']['current_bet'],
         on_click=spin_roulette
     ),
     Button(
-        id='set_bet_null', text=Format('Обнулить ставку.'),
-        when=F['dialog_data']['current_bet'], on_click=set_bet_none
+        id='set_bet_sum_null', text=Format('💶 Обнулить ставку'), when=F['dialog_data']['current_bet'],
+        on_click=set_bet_sum_none
+    ),
+    Button(
+        id='set_bet_null', text=Format('❎ Отменить ставку'),
+        on_click=set_bet_none
     ),
     Row(
         Button(id='bet_plus_10', text=Format('+10'), on_click=set_bet_clicked),
@@ -130,18 +123,23 @@ roulette_set_bet_window = Window(
     ),
     getter=balance_getter,
     state=CasinoDialog.roulette_set_bet,
+    parse_mode=ParseMode.HTML,
 )
 
 roulette_spin_window = Window(
     Format(
         text='{roulette_spin}'
     ),
-    Button(
-        id='text',
-        text=Format('text')
+    SwitchTo(
+        id='back_to_casino',
+        text=Format('🔄 Сыграть ещё раз'),
+        state=CasinoDialog.roulette,
+        when=~F['dialog_data']['spinning']
     ),
+    Button(id='close_dialog', text=Format('❌ Закрыть'), on_click=close_dialog),
     getter=roulette_spin_getter,
-    state=CasinoDialog.roulette_spin
+    state=CasinoDialog.roulette_spin,
+    parse_mode=ParseMode.HTML
 )
 
 casino_dialog = Dialog(
