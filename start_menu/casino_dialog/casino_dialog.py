@@ -5,8 +5,8 @@ from aiogram_dialog.widgets.kbd import Button, SwitchTo, Back, Group, Row, Count
 from aiogram_dialog.widgets.text import Format, Const
 
 from start_menu.casino_dialog.casino_dialog_states import CasinoDialog
-from start_menu.casino_dialog.casino_getters import first_window_start_data, bet_getter
-from start_menu.casino_dialog.casino_on_click_functions import close_dialog, choose_set, set_bet_click, on_bet_changed
+from start_menu.casino_dialog.casino_getters import first_window_start_data, balance_getter
+from start_menu.casino_dialog.casino_on_click_functions import close_dialog, choose_set, set_bet_clicked, set_bet_none
 
 casino_menu_window = Window(
     Format(
@@ -87,34 +87,43 @@ roulette_set_bet_window = Window(
     Format(
         text='🎰 Ваш текущий баланс: {balance}\n\n'
              'Вы поставили на {dialog_data[title]}\n'
-             'Коэффициент на победу {dialog_data[coefficient]}\n\n'
-             'Выберите сумму ставки: ',
-        when=~F['bet']
+             'Коэффициент на победу {dialog_data[coefficient]}\n\n',
+        when=~F['dialog_data']['current_bet']
+    ),
+    Button(
+        id='current_bet', text=Format('Время делать ставки! ⬇️'),
+        when=~F['dialog_data']['current_bet']
     ),
     Format(
         text='🎰 Ваш текущий баланс: {balance}\n\n'
              'Вы поставили на {dialog_data[title]}\n'
              'Коэффициент на победу: {dialog_data[coefficient]}\n\n'
-             'Ваш потенциальный выигрыш: {potential_gain} руб.\n\n'
-             'Выберите сумму ставки: ',
-        when=F['bet']
+             'Ваш потенциальный выигрыш: {dialog_data[potential_gain]} руб.\n\n',
+        when=F['dialog_data']['current_bet']
     ),
-    Counter(
-        id="roulette_bet_counter",
-        text=Format('{value:g} руб.'),
-        plus=Const('+10 руб.'),
-        minus=Const('-10 руб.'),
-        default=10,
-        max_value=F["balance"],
-        on_text_click=set_bet_click,
-        on_value_changed=on_bet_changed,
-        increment=10
+    Button(
+        id='current_bet', text=Format('Ваша ставка: {dialog_data[current_bet]} руб.'),
+        when=F['dialog_data']['current_bet']
+    ),
+    Button(
+        id='set_bet_null', text=Format('Обнулить ставку.'),
+        when=F['dialog_data']['current_bet'], on_click=set_bet_none
+    ),
+    Row(
+        Button(id='bet_plus_10', text=Format('+10'), on_click=set_bet_clicked),
+        Button(id='bet_plus_100', text=Format('+100'), on_click=set_bet_clicked),
+        Button(id='bet_plus_1000', text=Format('+1000'), on_click=set_bet_clicked),
+    ),
+    Row(
+        Button(id='bet_minus_10', text=Format('-10'), on_click=set_bet_clicked),
+        Button(id='bet_minus_100', text=Format('-100'), on_click=set_bet_clicked),
+        Button(id='bet_minus_1000', text=Format('-1000'), on_click=set_bet_clicked),
     ),
     Row(
         Back(id='back', text=Format('🔙 Назад')),
         Button(id='close_dialog', text=Format('❌ Закрыть'), on_click=close_dialog),
     ),
-    getter=bet_getter,
+    getter=balance_getter,
     state=CasinoDialog.roulette_set_bet,
 )
 
