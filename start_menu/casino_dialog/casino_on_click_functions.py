@@ -8,7 +8,7 @@ from aiogram_dialog.widgets.kbd import Button, ManagedCounter
 from aiogram.exceptions import TelegramRetryAfter
 from start_menu.casino_dialog.casino_data import BET_TYPES, wheel
 from start_menu.casino_dialog.casino_dialog_states import CasinoDialog
-from start_menu.casino_dialog.utils import parse_bet_slug
+from start_menu.casino_dialog.utils import parse_bet_slug, is_bet_winning
 
 
 async def close_dialog(
@@ -23,48 +23,63 @@ async def close_dialog(
 
 async def spin_roulette(callback: CallbackQuery, button: Button, dialog_manager: DialogManager):
     dialog_manager.dialog_data["roulette_spin"] = "⏳ Крутим..."
+    dialog_manager.dialog_data["spinning"] = True
     await dialog_manager.switch_to(CasinoDialog.roulette_spin)
-
-    # Получаем фонового менеджера сразу после переключения состояния
     await check_roulette_spin(dialog_manager)
 
 
-# Фоновая функция прокрутки
-async def check_roulette_spin(bg_manager: DialogManager):
-    spins = random.randint(25, 35)
-    delay = 0.1
+async def check_roulette_spin(dialog_manager: DialogManager):
+    spins = 30
+    start_index = random.randint(0, len(wheel) - 1)
 
     for i in range(spins):
-        index = i % len(wheel)
-        number, color = wheel[index]
-
+        current_index = (start_index + i) % len(wheel)
         view = []
-        for j, (n, c) in enumerate(wheel[index:index + 7]):
+        for j in range(7):
+            wheel_index = (current_index + j) % len(wheel)
+            number, color = wheel[wheel_index]
             if j == 0:
-                view.append(f'🔘{c}{n}')
+                view.append(f'👉{color}{number}')
             else:
-                view.append(f'{c}{n}')
+                view.append(f'{color}{number}')
         display = ' | '.join(view)
+        await dialog_manager.update({'roulette_spin': display})
+        await asyncio.sleep(0.07)
 
-        # Только каждую третью итерацию обновляем сообщение
-        if i % 3 == 0:
-            try:
-                await bg_manager.update({"roulette_spin": display})
-            except Exception as e:
-                print(f"Ошибка обновления сообщения: {e}")
+    final_index = (start_index + spins - 1) % len(wheel)
+    result_number_str, result_color = wheel[final_index]
+    result_number = int(result_number_str)
 
-        await asyncio.sleep(delay)
-        delay *= 1.07
+    dialog_data = dialog_manager.dialog_data
+    bet_id = dialog_data.get("bet_id")
+    potential_gain = dialog_data.get("potential_gain", 0)
 
-    # Результат
-    result_number, result_color = wheel[index]
-    color_name = {"🔴": "красное", "⚫": "черное", "🟩": "зеленое"}[result_color]
-    result_text = f'🎉 Выпало: {result_color}{result_number} — {color_name.upper()}!'
+    win = is_bet_winning(bet_id, result_number, result_color)
 
-    try:
-        await bg_manager.update({"roulette_spin": result_text})
-    except Exception as e:
-        print(f"Ошибка финального обновления: {e}")
+    view = []
+    for j in range(7):
+        wheel_index = (final_index + j) % len(wheel)
+        number, color = wheel[wheel_index]
+        if j == 0:
+            view.append(f'✅{color}{number}')
+        else:
+            view.append(f'{color}{number}')
+    display = ' | '.join(view)
+
+    await dialog_manager.update({'roulette_spin': display})
+    await asyncio.sleep(3.0)
+
+    # Теперь добавляем текст результата
+    color_name = {'🔴': 'красное', '⚫': 'черное', '🟩': 'зеленое'}[result_color]
+    result_line = f'\n\n🎯 Результат: {result_color}{result_number} — {color_name.upper()}!'
+
+    if win:
+        result_line += f'\n\n💰 Вы выиграли {potential_gain} монет!'
+    else:
+        result_line += '\n\n😢 Вы проиграли... Повезет в следующий раз!'
+
+    dialog_manager.dialog_data['spinning'] = False
+    await dialog_manager.update({'roulette_spin': display + result_line})
 
 
 async def choose_set(
@@ -80,6 +95,7 @@ async def choose_set(
     dialog_manager.dialog_data['title'] = bet_info.get('title')
     dialog_manager.dialog_data['coefficient'] = bet_info.get('coefficient')
     dialog_manager.dialog_data['current_bet'] = None
+    dialog_manager.dialog_data['bet_id'] = bet_id
 
     await dialog_manager.switch_to(
         CasinoDialog.roulette_set_bet
@@ -89,6 +105,14 @@ async def choose_set(
 async def set_bet_none(
         callback: CallbackQuery, button: Button, dialog_manager: DialogManager
 ):
+    dialog_manager.dialog_data['current_bet'] = None
+    await dialog_manager.switch_to(
+        CasinoDialog.roulette_choose_bet
+    )
+
+
+async def set_bet_sum_none(
+        callback: CallbackQuery, button: Button, dialog_manager: DialogManager):
     dialog_manager.dialog_data['current_bet'] = None
 
 
