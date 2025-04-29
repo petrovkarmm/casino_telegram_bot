@@ -4,7 +4,7 @@ from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.kbd import Button, ManagedCounter
 
-from start_menu.casino_dialog.casino_data import BET_TYPES
+from start_menu.casino_dialog.casino_data import BET_TYPES, parse_bet_slug
 from start_menu.casino_dialog.casino_dialog_states import CasinoDialog
 
 
@@ -30,34 +30,44 @@ async def choose_set(
 
     dialog_manager.dialog_data['title'] = bet_info.get('title')
     dialog_manager.dialog_data['coefficient'] = bet_info.get('coefficient')
+    dialog_manager.dialog_data['current_bet'] = None
 
     await dialog_manager.switch_to(
         CasinoDialog.roulette_set_bet
     )
 
 
-
-async def set_bet_click(
-        event: CallbackQuery,
-        widget: ManagedCounter,
-        dialog_manager: DialogManager,
-) -> None:
-    await event.answer(f"Value: {widget.get_value()}")
+async def set_bet_none(
+        callback: CallbackQuery, button: Button, dialog_manager: DialogManager
+):
+    dialog_manager.dialog_data['current_bet'] = None
 
 
-async def on_bet_changed(
-        event: CallbackQuery,
-        widget: ManagedCounter,
-        dialog_manager: DialogManager,
-) -> None:
-    current_value = widget.get_value()
+async def set_bet_clicked(
+        callback: CallbackQuery, button: Button, dialog_manager: DialogManager
+):
+    bet_slug = callback.data
+    bet = parse_bet_slug(bet_slug)
+
+    current_bet = dialog_manager.dialog_data['current_bet']
     current_balance = dialog_manager.start_data['balance']
+    coefficient = dialog_manager.dialog_data['coefficient']
 
-    print(current_value)
-    print(current_balance)
+    if current_bet:
+        future_bet = bet + current_bet
+        potential_gain = future_bet * coefficient
+    else:
+        future_bet = bet
+        potential_gain = bet * coefficient
 
-    if current_balance == current_value:
-        await event.answer(
-            'stop'
+    if future_bet > current_balance:
+        await callback.answer(
+            text='Недостаточно денег на балансе.'
         )
-        return
+    elif future_bet < 0:
+        await callback.answer(
+            text='Ставка не может быть меньше 0.'
+        )
+    else:
+        dialog_manager.dialog_data['current_bet'] = future_bet
+        dialog_manager.dialog_data['potential_gain'] = potential_gain
