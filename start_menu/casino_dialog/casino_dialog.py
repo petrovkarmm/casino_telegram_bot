@@ -5,8 +5,9 @@ from aiogram_dialog.widgets.kbd import Button, SwitchTo, Back, Group, Row, Count
 from aiogram_dialog.widgets.text import Format, Const
 
 from start_menu.casino_dialog.casino_dialog_states import CasinoDialog
-from start_menu.casino_dialog.casino_getters import first_window_start_data, balance_getter
-from start_menu.casino_dialog.casino_on_click_functions import close_dialog, choose_set, set_bet_clicked, set_bet_none
+from start_menu.casino_dialog.casino_getters import first_window_start_data, balance_getter, roulette_spin_getter
+from start_menu.casino_dialog.casino_on_click_functions import close_dialog, choose_set, set_bet_clicked, set_bet_none, \
+    spin_roulette
 
 casino_menu_window = Window(
     Format(
@@ -106,6 +107,10 @@ roulette_set_bet_window = Window(
         when=F['dialog_data']['current_bet']
     ),
     Button(
+        id='start_roulette', text=Format('~ Прокрутить рулетку ~'), when=F['dialog_data']['current_bet'],
+        on_click=spin_roulette
+    ),
+    Button(
         id='set_bet_null', text=Format('Обнулить ставку.'),
         when=F['dialog_data']['current_bet'], on_click=set_bet_none
     ),
@@ -127,9 +132,22 @@ roulette_set_bet_window = Window(
     state=CasinoDialog.roulette_set_bet,
 )
 
+roulette_spin_window = Window(
+    Format(
+        text='{roulette_spin}'
+    ),
+    Button(
+        id='text',
+        text=Format('text')
+    ),
+    getter=roulette_spin_getter,
+    state=CasinoDialog.roulette_spin
+)
+
 casino_dialog = Dialog(
     casino_menu_window,
     roulette_menu_window,
     roulette_choose_bet_window,
-    roulette_set_bet_window
+    roulette_set_bet_window,
+    roulette_spin_window
 )
