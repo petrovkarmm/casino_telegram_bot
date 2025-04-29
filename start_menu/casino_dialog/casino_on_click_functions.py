@@ -4,8 +4,9 @@ from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.kbd import Button, ManagedCounter
 
-from start_menu.casino_dialog.casino_data import BET_TYPES, parse_bet_slug
+from start_menu.casino_dialog.casino_data import BET_TYPES
 from start_menu.casino_dialog.casino_dialog_states import CasinoDialog
+from start_menu.casino_dialog.utils import parse_bet_slug
 
 
 async def close_dialog(
