@@ -1,18 +1,22 @@
 import asyncio
+import os
 
 from aiogram import Bot, Dispatcher
 from aiogram.types import ErrorEvent
 from aiogram_dialog import setup_dialogs, DialogManager
 from aiogram_dialog.api.exceptions import UnknownIntent, OutdatedIntent
-
-from settings import bot_token
+from dotenv import load_dotenv, find_dotenv
 from start_menu.casino_dialog.casino_dialog_router import casino_dialog_router
 from start_menu.start_menu_router import start_menu_router
+
+load_dotenv(find_dotenv())
+
+token = os.getenv("BOT_TOKEN")
 
 
 async def bot_start():
     # main configuration
-    bot = Bot(token=bot_token)
+    bot = Bot(token=token)
     dp = Dispatcher()
     setup_dialogs(dp)
 
