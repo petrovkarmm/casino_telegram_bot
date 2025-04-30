@@ -130,6 +130,11 @@ roulette_spin_window = Window(
     Format(
         text='{roulette_spin}'
     ),
+    Format(
+        text='<b>Ваш текущий баланс: {start_data[balance]}</b>'
+             '\n\n{roulette_spin}',
+        when=~F['dialog_data']['spinning']
+    ),
     SwitchTo(
         id='back_to_casino',
         text=Format('🔄 Сыграть ещё раз'),
