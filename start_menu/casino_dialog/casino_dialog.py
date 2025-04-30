@@ -128,10 +128,11 @@ roulette_set_bet_window = Window(
 
 roulette_spin_window = Window(
     Format(
-        text='{roulette_spin}'
+        text='{roulette_spin}',
+        when=F['dialog_data']['spinning']
     ),
     Format(
-        text='<b>Ваш текущий баланс: {start_data[balance]}</b>'
+        text='<b>Ваш текущий баланс: {start_data[balance]} руб.</b>'
              '\n\n{roulette_spin}',
         when=~F['dialog_data']['spinning']
     ),

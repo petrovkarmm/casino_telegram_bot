@@ -76,7 +76,7 @@ async def check_roulette_spin(dialog_manager: DialogManager):
     current_balance = dialog_manager.start_data['balance']
 
     if win:
-        result_line += f'\n\n💰 Вы выиграли {potential_gain} монет!'
+        result_line += f'\n\n💰 Вы выиграли {potential_gain} руб.!'
         dialog_manager.start_data['balance'] = current_balance + potential_gain
     else:
         result_line += '\n\n😢 Вы проиграли... Повезет в следующий раз!'
