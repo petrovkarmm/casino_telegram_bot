@@ -11,7 +11,7 @@ from start_menu.casino_dialog.casino_on_click_functions import (close_dialog, ch
 
 casino_menu_window = Window(
     Format(
-        text='🎰 Ваш текущий баланс: {balance} руб.\n\n'
+        text='🎰 <b>Ваш текущий баланс: {start_data[balance]} руб.</b>\n\n'
              'Выберите игру 🎲'
     ),
     SwitchTo(id='roulette', text=Format('🎯 Рулетка'), state=CasinoDialog.roulette),
@@ -51,7 +51,7 @@ roulette_menu_window = Window(
 
 roulette_choose_bet_window = Window(
     Format(
-        text='🎰 Ваш текущий баланс: {balance} руб.\n\n'
+        text='🎰 <b>Ваш текущий баланс: {start_data[balance]} руб.</b>\n\n'
              '💬 Выберите ставку:'
     ),
     Group(
@@ -75,7 +75,7 @@ roulette_choose_bet_window = Window(
 
 roulette_set_bet_window = Window(
     Format(
-        text='🎰 Баланс: {balance} руб.\n\n'
+        text='🎰 <b>Ваш текущий баланс: {start_data[balance]} руб.</b>\n\n'
              'Вы выбрали: <b>{dialog_data[title]}</b>\n\n'
              'Коэффициент: <b>x{dialog_data[coefficient]}</b>\n\n',
         when=~F['dialog_data']['current_bet']
@@ -85,7 +85,7 @@ roulette_set_bet_window = Window(
         when=~F['dialog_data']['current_bet']
     ),
     Format(
-        text='🎰 Баланс: {balance} руб.\n\n'
+        text='🎰 <b>Ваш текущий баланс: {start_data[balance]} руб.</b>\n\n'
              'Вы выбрали: <b>{dialog_data[title]}</b>\n\n'
              'Коэффициент: <b>x{dialog_data[coefficient]}</b>\n\n'
              '💵 Потенциальный выигрыш: <b>{dialog_data[potential_gain]} руб.</b>\n\n',
