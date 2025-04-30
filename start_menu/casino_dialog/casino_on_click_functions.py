@@ -73,10 +73,15 @@ async def check_roulette_spin(dialog_manager: DialogManager):
     color_name = {'🔴': 'красное', '⚫': 'черное', '🟩': 'зеленое'}[result_color]
     result_line = f'\n\n🎯 Результат: {result_color}{result_number} — {color_name.upper()}!'
 
+    current_balance = dialog_manager.start_data['balance']
+
     if win:
         result_line += f'\n\n💰 Вы выиграли {potential_gain} монет!'
+        dialog_manager.start_data['balance'] = current_balance + potential_gain
     else:
         result_line += '\n\n😢 Вы проиграли... Повезет в следующий раз!'
+        bet = dialog_manager.dialog_data['current_bet']
+        dialog_manager.start_data['balance'] = current_balance - bet
 
     dialog_manager.dialog_data['spinning'] = False
     await dialog_manager.update({'roulette_spin': display + result_line})
