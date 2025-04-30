@@ -31,6 +31,7 @@ async def spin_roulette(callback: CallbackQuery, button: Button, dialog_manager:
 async def check_roulette_spin(dialog_manager: DialogManager):
     spins = 30
     start_index = random.randint(0, len(wheel) - 1)
+    delay = 0.00
 
     for i in range(spins):
         current_index = (start_index + i) % len(wheel)
@@ -44,7 +45,8 @@ async def check_roulette_spin(dialog_manager: DialogManager):
                 view.append(f'{color}{number}')
         display = ' | '.join(view)
         await dialog_manager.update({'roulette_spin': display})
-        await asyncio.sleep(0.07)
+        await asyncio.sleep(delay)
+        delay += 0.02
 
     final_index = (start_index + spins - 1) % len(wheel)
     result_number_str, result_color = wheel[final_index]
