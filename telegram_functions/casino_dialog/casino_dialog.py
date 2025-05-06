@@ -4,19 +4,19 @@ from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.kbd import Button, SwitchTo, Back, Group, Row
 from aiogram_dialog.widgets.text import Format
 
-from start_menu.casino_dialog.casino_dialog_states import CasinoDialog
-from start_menu.casino_dialog.casino_getters import first_window_start_data, balance_getter, roulette_spin_getter
-from start_menu.casino_dialog.casino_on_click_functions import (close_dialog, choose_set, set_bet_clicked,
-                                                                set_bet_none, spin_roulette, set_bet_sum_none)
+from telegram_functions.casino_dialog.casino_dialog_states import CasinoDialog
+from telegram_functions.casino_dialog.casino_getters import balance_getter, roulette_spin_getter
+from telegram_functions.casino_dialog.casino_on_click_functions import (close_dialog, choose_set, set_bet_clicked,
+                                                                        set_bet_none, spin_roulette, set_bet_sum_none)
 
 casino_menu_window = Window(
     Format(
-        text='🎰 <b>Ваш текущий баланс: {start_data[balance]} руб.</b>\n\n'
+        text='🎰 <b>Ваш текущий баланс: {balance} руб.</b>\n\n'
              'Выберите игру 🎲'
     ),
     SwitchTo(id='roulette', text=Format('🎯 Рулетка'), state=CasinoDialog.roulette),
     Button(id='close_dialog', text=Format('❌ Закрыть'), on_click=close_dialog),
-    getter=first_window_start_data,
+    getter=balance_getter,
     state=CasinoDialog.casino_main_menu,
     parse_mode=ParseMode.HTML,
 )
@@ -51,7 +51,7 @@ roulette_menu_window = Window(
 
 roulette_choose_bet_window = Window(
     Format(
-        text='🎰 <b>Ваш текущий баланс: {start_data[balance]} руб.</b>\n\n'
+        text='🎰 <b>Ваш текущий баланс: {balance} руб.</b>\n\n'
              '💬 Выберите ставку:'
     ),
     Group(
@@ -68,14 +68,14 @@ roulette_choose_bet_window = Window(
         Back(id='back', text=Format('🔙 Назад')),
         Button(id='close_dialog', text=Format('❌ Закрыть'), on_click=close_dialog),
     ),
-    getter=first_window_start_data,
+    getter=balance_getter,
     state=CasinoDialog.roulette_choose_bet,
     parse_mode=ParseMode.HTML,
 )
 
 roulette_set_bet_window = Window(
     Format(
-        text='🎰 <b>Ваш текущий баланс: {start_data[balance]} руб.</b>\n\n'
+        text='🎰 <b>Ваш текущий баланс: {balance} руб.</b>\n\n'
              'Вы выбрали: <b>{dialog_data[title]}</b>\n\n'
              'Коэффициент: <b>x{dialog_data[coefficient]}</b>\n\n',
         when=~F['dialog_data']['current_bet']
@@ -85,14 +85,11 @@ roulette_set_bet_window = Window(
         when=~F['dialog_data']['current_bet']
     ),
     Format(
-        text='🎰 <b>Ваш текущий баланс: {start_data[balance]} руб.</b>\n\n'
+        text='🎰 <b>Ваш текущий баланс: {balance} руб.</b>\n\n'
+             '🔒 Ваша ставка: {dialog_data[current_bet]} руб.\n'
+             '💵 Потенциальный выигрыш: <b>{dialog_data[potential_gain]} руб.</b>\n\n'
              'Вы выбрали: <b>{dialog_data[title]}</b>\n\n'
-             'Коэффициент: <b>x{dialog_data[coefficient]}</b>\n\n'
-             '💵 Потенциальный выигрыш: <b>{dialog_data[potential_gain]} руб.</b>\n\n',
-        when=F['dialog_data']['current_bet']
-    ),
-    Button(
-        id='current_bet', text=Format('🔒 Ваша ставка: {dialog_data[current_bet]} руб.'),
+             'Коэффициент: <b>x{dialog_data[coefficient]}</b>\n\n',
         when=F['dialog_data']['current_bet']
     ),
     Button(
@@ -129,12 +126,6 @@ roulette_set_bet_window = Window(
 roulette_spin_window = Window(
     Format(
         text='{roulette_spin}',
-        when=F['dialog_data']['spinning']
-    ),
-    Format(
-        text='<b>Ваш текущий баланс: {start_data[balance]} руб.</b>'
-             '\n\n{roulette_spin}',
-        when=~F['dialog_data']['spinning']
     ),
     SwitchTo(
         id='back_to_casino',
@@ -143,7 +134,7 @@ roulette_spin_window = Window(
         when=~F['dialog_data']['spinning']
     ),
     Button(id='close_dialog', text=Format('❌ Закрыть'), on_click=close_dialog, when=~F['dialog_data']['spinning']),
-    getter=roulette_spin_getter,
+    getter=(roulette_spin_getter, balance_getter),
     state=CasinoDialog.roulette_spin,
     parse_mode=ParseMode.HTML
 )
