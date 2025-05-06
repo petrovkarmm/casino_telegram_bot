@@ -1,14 +1,14 @@
 import asyncio
 import random
-from pprint import pprint
 
 from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager, BaseDialogManager, ShowMode
 from aiogram_dialog.widgets.kbd import Button, ManagedCounter
 from aiogram.exceptions import TelegramRetryAfter
-from start_menu.casino_dialog.casino_data import BET_TYPES, wheel
-from start_menu.casino_dialog.casino_dialog_states import CasinoDialog
-from start_menu.casino_dialog.utils import parse_bet_slug, is_bet_winning
+from telegram_functions.casino_dialog.casino_data import BET_TYPES, wheel
+from telegram_functions.casino_dialog.casino_dialog_states import CasinoDialog
+from telegram_functions.casino_dialog.utils import parse_bet_slug, is_bet_winning
+from telegram_functions.global_utls.balance_manipultaion import balance_manipulation
 
 
 async def close_dialog(
@@ -75,15 +75,15 @@ async def check_roulette_spin(dialog_manager: DialogManager):
     color_name = {'🔴': 'красное', '⚫': 'черное', '🟩': 'зеленое'}[result_color]
     result_line = f'\n\n🎯 Результат: {result_color}{result_number} — {color_name.upper()}!'
 
-    current_balance = dialog_manager.start_data['balance']
+    user_id = dialog_manager.start_data['user_id']
 
     if win:
         result_line += f'\n\n💰 Вы выиграли {potential_gain} руб.!'
-        dialog_manager.start_data['balance'] = current_balance + potential_gain
+        await balance_manipulation(user_id=user_id, amount=(+potential_gain))
     else:
         result_line += '\n\n😢 Вы проиграли... Повезет в следующий раз!'
         bet = dialog_manager.dialog_data['current_bet']
-        dialog_manager.start_data['balance'] = current_balance - bet
+        await balance_manipulation(user_id=user_id, amount=(-bet))
 
     dialog_manager.dialog_data['spinning'] = False
     await dialog_manager.update({'roulette_spin': display + result_line})
@@ -130,7 +130,7 @@ async def set_bet_clicked(
     bet = parse_bet_slug(bet_slug)
 
     current_bet = dialog_manager.dialog_data['current_bet']
-    current_balance = dialog_manager.start_data['balance']
+    current_balance = dialog_manager.middleware_data.get('balance', 0)
     coefficient = dialog_manager.dialog_data['coefficient']
 
     if current_bet:
