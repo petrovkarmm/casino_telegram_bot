@@ -1,5 +1,5 @@
 from aiogram import Router
-from start_menu.casino_dialog.casino_dialog import casino_dialog
+from telegram_functions.casino_dialog.casino_dialog import casino_dialog
 
 casino_dialog_router = Router()
 
