@@ -6,8 +6,9 @@ from aiogram.types import ErrorEvent
 from aiogram_dialog import setup_dialogs, DialogManager
 from aiogram_dialog.api.exceptions import UnknownIntent, OutdatedIntent
 from dotenv import load_dotenv, find_dotenv
-from start_menu.casino_dialog.casino_dialog_router import casino_dialog_router
-from start_menu.start_menu_router import start_menu_router
+from telegram_functions.casino_dialog.casino_dialog_router import casino_dialog_router
+from telegram_functions.middlewares.balance_middleware import BalanceUpdater
+from telegram_functions.main_menu_router import start_menu_router
 
 load_dotenv(find_dotenv())
 
@@ -40,6 +41,10 @@ async def bot_start():
 
     # error handler
     # dp.errors.register(error_unknown_intent_handler)
+
+    # mw
+    dp.message.middleware(BalanceUpdater())
+    dp.callback_query.middleware(BalanceUpdater())
 
     # handlers routers
     dp.include_router(start_menu_router)
