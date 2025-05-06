@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from aiogram_dialog import DialogManager
 
-from start_menu.casino_dialog.casino_dialog_states import CasinoDialog
+from telegram_functions.casino_dialog.casino_dialog_states import CasinoDialog
 
 start_menu_router = Router()
 
@@ -13,7 +13,7 @@ start_menu_router = Router()
 async def start_dialog_command(message: Message, state: FSMContext, dialog_manager: DialogManager):
     await dialog_manager.start(
         CasinoDialog.casino_main_menu,
-        data={'balance': 110}
+        data={'user_id': message.from_user.id}
     )
 
 
@@ -21,6 +21,6 @@ async def start_dialog_command(message: Message, state: FSMContext, dialog_manag
 async def start_dialog_text(message: Message, state: FSMContext, dialog_manager: DialogManager):
     await dialog_manager.start(
         CasinoDialog.casino_main_menu,
-        data={'balance': 110},
+        data={'user_id': message.from_user.id},
 
     )
